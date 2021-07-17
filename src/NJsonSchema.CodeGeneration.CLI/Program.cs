@@ -111,48 +111,87 @@ namespace NJsonSchema.CodeGeneration.CLI.Console
                 cDirInfo.Create();
             }
 
-            //get only .json files
-            var schemasFiles = sDirInfo.GetFiles().ToList().Where((f) => f.Extension.ToLower().Equals(".json")).ToList();
-            System.Console.WriteLine("found {0} json schema files", schemasFiles.Count());
-            foreach (var schemafile in schemasFiles)
+            await GenCodeForFolder(sDirInfo, tDirInfo, cDirInfo, namespaceArg.Value);
+
+            var schemaFolders = sDirInfo.GetDirectories().ToList();
+            foreach (var folder in schemaFolders)
             {
-                System.Console.WriteLine("generating from {0} to", schemafile.Name);
-                try
+                //tDirInfo
+                DirectoryInfo tsDir = null;
+                if (tDirInfo != null)
                 {
-                    var schema = await JsonSchema.FromFileAsync(schemafile.FullName);
-                    //typescript
-                    if (tDirInfo != null)
-                    {
-                        var generator = new TypeScriptGenerator(schema);
-                        var typeScript = generator.GenerateFile();
-                        Save(sDirInfo, tDirInfo, schemafile, typeScript, ".ts");
-                    }
-                    //c#
-                    if (cDirInfo != null)
-                    {
-                        var generator = new CSharpGenerator(schema, new CSharpGeneratorSettings()
-                        {
-                            Namespace = namespaceArg.Value ?? "Root",
-                            PropertyNameGenerator = new AgodaPropertyNameGenerator(),
-                            EnumNameGenerator = new AgodaEnumNameGenerator(),
-                            TypeNameGenerator = new AgodaTypeNameGenerator(),
-                        });
-                        var cSharp = generator.GenerateFile();
-                        Save(sDirInfo, cDirInfo, schemafile, cSharp, ".cs");
-                    }
+                    if (!Directory.Exists(tDirInfo.FullName + @"\" + folder.Name))
+                        Directory.CreateDirectory(tDirInfo.FullName + @"\" + folder.Name);
+
+                    tsDir = new DirectoryInfo(tDirInfo.FullName + @"\" + folder.Name);
                 }
-                catch (Exception ex)
+
+                DirectoryInfo csDir = null;
+                if (cDirInfo != null)
                 {
-                    System.Console.WriteLine("Exception: {0} ", ex.Message);
-                    System.Console.WriteLine("Overstep and continue generating remaining?");
-                    if (!GetYesOrNoUserInput())
-                        return;
+                    System.Console.WriteLine(cDirInfo.FullName + @"\" + folder.Name);
+                    if (!Directory.Exists(cDirInfo.FullName + @"\" + folder.Name))
+                        Directory.CreateDirectory(cDirInfo.FullName + @"\" + folder.Name);
+
+                    csDir = new DirectoryInfo(cDirInfo.FullName + @"\" + folder.Name);
                 }
+                await GenCodeForFolder(folder, tsDir, csDir, namespaceArg.Value + "." + folder.Name);
             }
             //exit
             System.Console.WriteLine("Done!");
-            System.Console.WriteLine("Press any key to exit.");
-            System.Console.ReadKey();
+        }
+
+        private static async Task GenCodeForFolder(DirectoryInfo sourceDirInfo, DirectoryInfo tsDirInfo, DirectoryInfo csDirInfo,
+            string namespaceArg)
+        {
+            //get only .json files
+            var schemasFiles = sourceDirInfo.GetFiles().ToList().Where((f) => f.Extension.ToLower().Equals(".json")).ToList();
+            System.Console.WriteLine("found {0} json schema files", schemasFiles.Count());
+            foreach (var schemafile in schemasFiles)
+            {
+                await TryGenCode(schemafile, tsDirInfo, sourceDirInfo, csDirInfo, namespaceArg);
+            }
+            
+        }
+
+        private static async Task<bool> TryGenCode(FileInfo schemafile, DirectoryInfo tDirInfo, DirectoryInfo sDirInfo,
+            DirectoryInfo cDirInfo, string namespaceArg)
+        {
+            System.Console.WriteLine("generating from {0} to", schemafile.Name);
+            try
+            {
+                var schema = await JsonSchema.FromFileAsync(schemafile.FullName);
+                //typescript
+                if (tDirInfo != null)
+                {
+                    var generator = new TypeScriptGenerator(schema);
+                    var typeScript = generator.GenerateFile();
+                    Save(sDirInfo, tDirInfo, schemafile, typeScript, ".ts");
+                }
+
+                //c#
+                if (cDirInfo != null)
+                {
+                    var generator = new CSharpGenerator(schema, new CSharpGeneratorSettings()
+                    {
+                        Namespace = namespaceArg ?? "Root",
+                        PropertyNameGenerator = new AgodaPropertyNameGenerator(),
+                        EnumNameGenerator = new AgodaEnumNameGenerator(),
+                        TypeNameGenerator = new AgodaTypeNameGenerator(),
+                    });
+                    var cSharp = generator.GenerateFile();
+                    Save(sDirInfo, cDirInfo, schemafile, cSharp, ".cs");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Console.WriteLine("Exception: {0} ", ex.Message);
+                System.Console.WriteLine("Overstep and continue generating remaining?");
+                if (!GetYesOrNoUserInput())
+                    return false;
+            }
+
+            return true;
         }
 
         private static void Save(DirectoryInfo source, DirectoryInfo target, FileInfo schema, string data, string fileExtension)
