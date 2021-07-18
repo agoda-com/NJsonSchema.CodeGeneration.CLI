@@ -120,20 +120,20 @@ namespace NJsonSchema.CodeGeneration.CLI.Console
                 DirectoryInfo tsDir = null;
                 if (tDirInfo != null)
                 {
-                    if (!Directory.Exists(tDirInfo.FullName + @"\" + folder.Name))
-                        Directory.CreateDirectory(tDirInfo.FullName + @"\" + folder.Name);
+                    if (!Directory.Exists(tDirInfo.FullName + @"/" + folder.Name))
+                        Directory.CreateDirectory(tDirInfo.FullName + @"/" + folder.Name);
 
-                    tsDir = new DirectoryInfo(tDirInfo.FullName + @"\" + folder.Name);
+                    tsDir = new DirectoryInfo(tDirInfo.FullName + @"/" + folder.Name);
                 }
 
                 DirectoryInfo csDir = null;
                 if (cDirInfo != null)
                 {
-                    System.Console.WriteLine(cDirInfo.FullName + @"\" + folder.Name);
-                    if (!Directory.Exists(cDirInfo.FullName + @"\" + folder.Name))
-                        Directory.CreateDirectory(cDirInfo.FullName + @"\" + folder.Name);
+                    System.Console.WriteLine(cDirInfo.FullName + @"/" + folder.Name);
+                    if (!Directory.Exists(cDirInfo.FullName + @"/" + folder.Name))
+                        Directory.CreateDirectory(cDirInfo.FullName + @"/" + folder.Name);
 
-                    csDir = new DirectoryInfo(cDirInfo.FullName + @"\" + folder.Name);
+                    csDir = new DirectoryInfo(cDirInfo.FullName + @"/" + folder.Name);
                 }
                 await GenCodeForFolder(folder, tsDir, csDir, namespaceArg.Value + "." + folder.Name);
             }
