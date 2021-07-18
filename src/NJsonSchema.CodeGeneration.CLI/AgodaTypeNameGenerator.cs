@@ -42,8 +42,8 @@ namespace NJsonSchema.CodeGeneration.CLI.Console
             {
                 typeName = GenerateAnonymousTypeName(typeNameHint, reservedTypeNames);
             }
-
-            return RemoveIllegalCharacters(typeName).SnakeToCamel();
+            
+            return RemoveIllegalCharacters(typeName).SnakeToPascal();
         }
 
         /// <summary>Generates the type name for the given schema.</summary>

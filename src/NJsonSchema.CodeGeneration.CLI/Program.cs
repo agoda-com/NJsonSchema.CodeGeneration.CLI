@@ -174,7 +174,7 @@ namespace NJsonSchema.CodeGeneration.CLI.Console
                 {
                     var generator = new CSharpGenerator(schema, new CSharpGeneratorSettings()
                     {
-                        Namespace = namespaceArg ?? "Root",
+                        Namespace = (namespaceArg ?? "Root") + "." + schemafile.Name.Replace(".schema.json", "").SnakeToPascal(),
                         PropertyNameGenerator = new AgodaPropertyNameGenerator(),
                         EnumNameGenerator = new AgodaEnumNameGenerator(),
                         TypeNameGenerator = new AgodaTypeNameGenerator(),

@@ -56,7 +56,7 @@ namespace NJsonSchema.CodeGeneration.CLI.Console
 
             return _invalidNameCharactersPattern.Replace(ConversionUtilities.ConvertToUpperCamelCase(name
                     .Replace(":", "-").Replace(@"""", @""), true), "_")
-                .SnakeToCamel();
+                .SnakeToPascal();
         }
     }
 }

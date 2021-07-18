@@ -20,10 +20,7 @@
                 .Replace(":", "_")
                 .Replace("-", "_")
                 .Replace("#", "_")
-                .SnakeToCamel();
-
-
-
+                .SnakeToPascal();
         }
     }
 }

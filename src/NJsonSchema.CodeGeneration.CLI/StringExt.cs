@@ -5,7 +5,7 @@ namespace NJsonSchema.CodeGeneration.CLI.Console
 {
     public static class StringExt
     {
-        public static string SnakeToCamel(this string that)
+        public static string SnakeToPascal(this string that)
         {
             return that.Split(new[] { "_" }, StringSplitOptions.RemoveEmptyEntries)
                 .Select(s =>
